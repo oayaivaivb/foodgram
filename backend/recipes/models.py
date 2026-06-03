@@ -31,3 +31,23 @@ class RecipeIngredient(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['recipe', 'ingredient'], name='unique_recipe_ingredient')
         ]
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='favorites')
+    recipe = models.ForeignKey('Recipe', on_delete=models.CASCADE, related_name='favorited_by')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'recipe'], name='unique_favorite')
+        ]
+
+
+class ShoppingCart(models.Model):
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='shopping_cart')
+    recipe = models.ForeignKey('Recipe', on_delete=models.CASCADE, related_name='in_shopping_cart')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'recipe'], name='unique_shopping_cart')
+        ]
