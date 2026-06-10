@@ -3,6 +3,7 @@ from django.shortcuts import render
 from djoser.views import UserViewSet as DjoserUserViewSet
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
@@ -33,7 +34,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthorOrReadOnly]
     pagination_class = PageNumberPagination
     filterset_class = RecipeFilter
-    filter_backends = (filters.DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend,)
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
