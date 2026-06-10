@@ -1,5 +1,5 @@
 from django_filters import rest_framework as filters
-from backend.recipes.models import Recipe, Tag
+from recipes.models import Recipe, Tag
 
 class RecipeFilter(filters.FilterSet):
     author = filters.NumberFilter(field_name='author__id')

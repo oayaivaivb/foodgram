@@ -10,11 +10,11 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 
-from backend.api.serializers import IngredientSerializer, RecipeCreateSerializer, RecipeSerializer, RecipeShortSerializer, TagSerializer, UserSerializer, UserCreateSerializer, UserWithRecipesSerializer
-from backend.recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
-from backend.api.filters import RecipeFilter
-from backend.api.permissions import IsAuthorOrReadOnly
-from backend.users.models import User
+from .serializers import IngredientSerializer, RecipeCreateSerializer, RecipeSerializer, RecipeShortSerializer, TagSerializer, UserSerializer, UserCreateSerializer, UserWithRecipesSerializer
+from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
+from .filters import RecipeFilter
+from .permissions import IsAuthorOrReadOnly
+from users.models import User
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
