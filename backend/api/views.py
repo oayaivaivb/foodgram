@@ -9,11 +9,17 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 
-from .serializers import IngredientSerializer, RecipeCreateSerializer, RecipeSerializer, RecipeShortSerializer, TagSerializer, UserSerializer, UserCreateSerializer, UserWithRecipesSerializer
+from .serializers import IngredientSerializer, RecipeCreateSerializer, RecipeSerializer, RecipeShortSerializer, TagSerializer, UserSerializer, UserCreateSerializer, UserWithRecipesSerializer, AvatarSerializer
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from .filters import RecipeFilter
 from .permissions import IsAuthorOrReadOnly
 from users.models import User
+
+
+class FoodgramPagination(PageNumberPagination):
+    page_query_param = 'page'
+    page_size_query_param = 'limit'
+    page_size = 6
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -32,7 +38,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
-    pagination_class = PageNumberPagination
+    pagination_class = FoodgramPagination
     filterset_class = RecipeFilter
     filter_backends = (DjangoFilterBackend,)
 
@@ -41,18 +47,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeSerializer
         return RecipeCreateSerializer
 
-    def _handle_recipe_relation(self, request, model, pk):
+    def _handle_relation(self, request, model, pk):
         recipe = get_object_or_404(Recipe, id=pk)
+        user = request.user
 
         if request.metod == 'POST':
-            if model.objects.filter(user=request.user, recipe=recipe).exists():
+            if model.objects.filter(user=user, recipe=recipe).exists():
                 return Response({'detail': 'Рецепт уже добавлен.'}, status=status.HTTP_400_BAD_REQUEST)
             model.objects.create(user=request.user, recipe=recipe)
             serializer = RecipeShortSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.metod == 'DELETE':
-            relation = model.objects.filter(user=request.user, recipe=recipe)
+            relation = model.objects.filter(user=user, recipe=recipe)
             if not relation.exists():
                 return Response({'detail': 'Рецепт не найден в списке.'}, status=status.HTTP_400_BAD_REQUEST)
             relation.delete()
@@ -60,11 +67,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
     def favorite(self, request, pk=None):
-        return self._handle_recipe_relation(request, Favorite, pk)
+        return self._handle_relation(request, Favorite, pk)
 
     @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
-        return self._handle_recipe_relation(request, ShoppingCart, pk)
+        return self._handle_relation(request, ShoppingCart, pk)
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
@@ -95,6 +102,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class UserViewSet(DjoserUserViewSet):
+    pagination_class = FoodgramPagination
+
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         user = request.user
@@ -125,3 +134,18 @@ class UserViewSet(DjoserUserViewSet):
                 return Response({'detail': 'Вы не подписаны на этого пользователя.'}, status=status.HTTP_400_BAD_REQUEST)
             subscription.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['put', 'delete'], url_path='me/avatar', permission_classes=[IsAuthenticated])
+    def avatar(self, request):
+        user = request.user
+        if request.method == 'PUT':
+            serializer = AvatarSerializer
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        if request.method == 'DELETE':
+            if user.avatar:
+                user.avatar.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+  
