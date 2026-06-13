@@ -10,6 +10,8 @@ django-filter==25.2
 djangorestframework==3.17.1
 djangorestframework_simplejwt==5.5.1
 djoser==2.3.3
+drf-extra-fields==3.7.0
+filetype==1.2.0
 idna==3.18
 oauthlib==3.3.1
 pillow==12.2.0
@@ -23,3 +25,6 @@ social-auth-core==4.9.1
 sqlparse==0.5.5
 tzdata==2026.2
 urllib3==2.7.0
+gunicorn==21.2.0
+psycopg2-binary==2.9.9
+python-dotenv==1.0.1
