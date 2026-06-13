@@ -83,40 +83,40 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
 
-deploy:
-  runs-on: ubuntu-latest
-  needs:
-    - build_backend_and_push_to_docker_hub
-    - build_frontend_and_push_to_docker_hub
-  steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
-    - name: Copy files via ssh
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_KEY }}
-        source: "infra/docker-compose.production.yml, infra/nginx.conf"
-        target: "foodgram"
-    - name: Executing remote ssh commands
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_KEY }}
-        script: |
-          # Заходим в базовую папку, куда scp положил файлы
-          cd foodgram
-          
-          # Запускаем docker compose, явно указав путь к скопированному файлу
-          sudo docker compose -f infra/docker-compose.production.yml pull
-          sudo docker compose -f infra/docker-compose.production.yml down
-          sudo docker compose -f infra/docker-compose.production.yml up -d
-          
-          # Выполняем команды внутри бэкенда
-          sudo docker compose -f infra/docker-compose.production.yml exec backend python manage.py migrate
-          sudo docker compose -f infra/docker-compose.production.yml exec backend python manage.py collectstatic --no-input
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - build_backend_and_push_to_docker_hub
+      - build_frontend_and_push_to_docker_hub
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Copy files via ssh
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "infra/docker-compose.production.yml, infra/nginx.conf"
+          target: "foodgram"
+      - name: Executing remote ssh commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # Заходим в базовую папку, куда scp положил файлы
+            cd foodgram
+            
+            # Запускаем docker compose, явно указав путь к скопированному файлу
+            sudo docker compose -f infra/docker-compose.production.yml pull
+            sudo docker compose -f infra/docker-compose.production.yml down
+            sudo docker compose -f infra/docker-compose.production.yml up -d
+            
+            # Выполняем команды внутри бэкенда
+            sudo docker compose -f infra/docker-compose.production.yml exec backend python manage.py migrate
+            sudo docker compose -f infra/docker-compose.production.yml exec backend python manage.py collectstatic --no-input
   send_message:
     runs-on: ubuntu-latest
     needs: deploy
