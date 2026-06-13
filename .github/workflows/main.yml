@@ -102,14 +102,13 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd foodgram
-            # Вытаскиваем compose файл прямо в корень foodgram
-            cp infra/docker-compose.production.yml .
             sudo docker compose -f docker-compose.production.yml pull
             sudo docker compose -f docker-compose.production.yml down
             sudo docker compose -f docker-compose.production.yml up -d
+            sudo docker compose -f docker-compose.production.yml exec backend python manage.py makemigrations
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --no-input
-
+            sudo docker compose -f docker-compose.production.yml exec backend python manage.py import_ingredients
   send_message:
     runs-on: ubuntu-latest
     needs: deploy

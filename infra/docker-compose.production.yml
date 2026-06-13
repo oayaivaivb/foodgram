@@ -28,6 +28,7 @@ services:
     volumes:
       - static:/app/staticfiles
       - media:/app/media
+      - ./data:/app/data
 
   frontend:
     image: oayaivaivb1/foodgram_frontend:latest
