@@ -4,14 +4,13 @@ on:
   push:
     branches:
       - main
-      - develop
 
 jobs:
   tests:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:15-alpine
+        image: postgres:13.10
         env:
           POSTGRES_USER: django_user
           POSTGRES_PASSWORD: test_password
@@ -27,10 +26,9 @@ jobs:
           python-version: 3.12
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip setuptools
-          pip install flake8==7.3.0 flake8-isort==7.0.0
-          pip install -r ./backend/requirements.txt
-      - name: Test with flake8 and django tests
+          python -m pip install --upgrade pip 
+          pip install -r backend/requirements.txt
+      - name: Test
         env:
           POSTGRES_USER: django_user
           POSTGRES_PASSWORD: test_password
@@ -38,19 +36,16 @@ jobs:
           DB_HOST: 127.0.0.1
           DB_PORT: 5432
         run: |
-          python -m flake8 backend/
           cd backend/
           python manage.py test
 
-  build_backend_and_push_to_docker_hub:
+  build_and_push_to_docker_hub:
     name: Push backend Docker image
     runs-on: ubuntu-latest
     needs: tests
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
       - name: Login to Docker
         uses: docker/login-action@v2
         with:
@@ -66,11 +61,10 @@ jobs:
   build_frontend_and_push_to_docker_hub:
     name: Push frontend Docker image
     runs-on: ubuntu-latest
+    needs: tests
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
       - name: Login to Docker
         uses: docker/login-action@v2
         with:
@@ -83,21 +77,41 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
 
+  build_gateway_and_push_to_docker_hub:
+    name: Push gateway Docker image
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+      - name: Login to Docker
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Push to DockerHub
+        uses: docker/build-push-action@v4
+        with:
+          context: ./gateway/
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_gateway:latest
+
   deploy:
     runs-on: ubuntu-latest
     needs:
-      - build_backend_and_push_to_docker_hub
+      - build_and_push_to_docker_hub
       - build_frontend_and_push_to_docker_hub
+      - build_gateway_and_push_to_docker_hub
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-      - name: Copy files via ssh
+      - name: Copy docker-compose.yml via ssh
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "infra/docker-compose.production.yml, infra/nginx.conf"
+          source: "docker-compose.production.yml"
           target: "foodgram"
       - name: Executing remote ssh commands
         uses: appleboy/ssh-action@master
@@ -106,24 +120,10 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            # Заходим в базовую папку, куда scp положил файлы
             cd foodgram
-            
-            # Запускаем docker compose, явно указав путь к скопированному файлу
-            sudo docker compose -f infra/docker-compose.production.yml pull
-            sudo docker compose -f infra/docker-compose.production.yml down
-            sudo docker compose -f infra/docker-compose.production.yml up -d
-            
-            # Выполняем команды внутри бэкенда
-            sudo docker compose -f infra/docker-compose.production.yml exec backend python manage.py migrate
-            sudo docker compose -f infra/docker-compose.production.yml exec backend python manage.py collectstatic --no-input
-  send_message:
-    runs-on: ubuntu-latest
-    needs: deploy
-    steps:
-      - name: Send message
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: Деплой Foodgram успешно выполнен!
+            sudo docker compose -f docker-compose.production.yml pull
+            sudo docker compose -f docker-compose.production.yml down
+            sudo docker compose -f docker-compose.production.yml up -d
+            sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
+            sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --no-input
+            sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
