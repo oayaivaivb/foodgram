@@ -1,0 +1,42 @@
+version: '3'
+
+volumes:
+  pg_data:
+  static:
+  media:
+
+services:
+  db:
+    image: postgres:13.10
+    env_file: .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  backend:
+    image: oayaivaivb1/foodgram_backend:latest
+    env_file: .env
+    depends_on:
+      - db
+    volumes:
+      - static:/backend_static
+      - media:/app/media
+
+  frontend:
+    image: oayaivaivb1/foodgram_frontend:latest
+    env_file: .env
+    depends_on:
+      - backend
+    volumes:
+      - static:/frontend_static
+
+  gateway:
+    image: oayaivaivb1/foodgram_gateway:latest
+    env_file: .env
+    depends_on:
+      - frontend
+      - backend
+    volumes:
+      - static:/staticfiles/
+      - media:/mediafiles/
+    ports:
+      - "80:80"
