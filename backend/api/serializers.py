@@ -3,10 +3,10 @@ import base64
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer as DjoserUserSerializer
-from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers
+
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
-from rest_framework import serializers
 from users.models import Subscription
 
 User = get_user_model()
@@ -54,6 +54,7 @@ class IngredientSerializer(serializers.ModelSerializer):
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
 
+
 class UserSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
@@ -67,13 +68,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed',
-            'avatar'
+            'email', 'id', 'username', 'first_name',
+            'last_name', 'is_subscribed', 'avatar'
         )
 
 
@@ -81,7 +77,8 @@ class RecipeIngredientReadSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit')
+        source='ingredient.measurement_unit'
+    )
 
     class Meta:
         model = RecipeIngredient
@@ -102,12 +99,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'password'
+            'email', 'id', 'username', 'first_name',
+            'last_name', 'password'
         )
 
     def create(self, validated_data):
@@ -119,23 +112,17 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = CustomUserSerializer(read_only=True)
     ingredients = RecipeIngredientReadSerializer(
-        many=True, source='recipe_ingredients', read_only=True)
+        many=True, source='recipe_ingredients', read_only=True
+    )
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
         fields = (
-            'id',
-            'tags',
-            'author',
-            'ingredients',
-            'is_favorited',
-            'is_in_shopping_cart',
-            'name',
-            'image',
-            'text',
-            'cooking_time'
+            'id', 'tags', 'author', 'ingredients',
+            'is_favorited', 'is_in_shopping_cart', 'name',
+            'image', 'text', 'cooking_time'
         )
 
     def get_is_favorited(self, obj):
@@ -155,7 +142,8 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all(), many=True)
+        queryset=Tag.objects.all(), many=True
+    )
     ingredients = RecipeIngredientWriteSerializer(many=True)
     image = Base64ImageField()
     author = CustomUserSerializer(read_only=True)
@@ -163,14 +151,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = (
-            'id',
-            'tags',
-            'author',
-            'ingredients',
-            'name',
-            'image',
-            'text',
-            'cooking_time'
+            'id', 'tags', 'author', 'ingredients', 'name',
+            'image', 'text', 'cooking_time'
         )
 
     def validate(self, data):
@@ -208,7 +190,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
         recipe = Recipe.objects.create(
-            author=self.context['request'].user, **validated_data)
+            author=self.context['request'].user, **validated_data
+        )
         recipe.tags.set(tags_data)
         self.create_ingredients_amounts(ingredients_data, recipe)
         return recipe
@@ -242,8 +225,9 @@ class SubscriptionSerializer(CustomUserSerializer):
     recipes_count = serializers.ReadOnlyField(source='recipes.count')
 
     class Meta(CustomUserSerializer.Meta):
-        fields = CustomUserSerializer.Meta.fields + ('recipes',
-                                                     'recipes_count')
+        fields = CustomUserSerializer.Meta.fields + (
+            'recipes', 'recipes_count'
+        )
 
     def get_recipes(self, obj):
         request = self.context.get('request')
@@ -252,4 +236,5 @@ class SubscriptionSerializer(CustomUserSerializer):
         if limit and limit.isdigit():
             queryset = queryset[:int(limit)]
         return RecipeShortSerializer(
-            queryset, many=True, context=self.context).data
+            queryset, many=True, context=self.context
+        ).data

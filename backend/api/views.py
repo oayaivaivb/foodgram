@@ -108,7 +108,6 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = IngredientFilter
 
 
-
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
@@ -197,6 +196,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response[
             'Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
         return response
+
 
 def short_link_redirect(request, id):
     recipe = get_object_or_404(Recipe, id=id)
