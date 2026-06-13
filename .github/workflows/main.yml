@@ -86,7 +86,7 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-      - name: Copy docker-compose.yml via ssh
+      - name: Copy docker-compose via scp
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -102,14 +102,13 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd foodgram
-            # Переносим compose файл из скопированной папки infra в корень foodgram (если нужно)
+            # Вытаскиваем compose файл прямо в корень foodgram
             cp infra/docker-compose.production.yml .
             sudo docker compose -f docker-compose.production.yml pull
             sudo docker compose -f docker-compose.production.yml down
             sudo docker compose -f docker-compose.production.yml up -d
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --no-input
-            sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
 
   send_message:
     runs-on: ubuntu-latest
