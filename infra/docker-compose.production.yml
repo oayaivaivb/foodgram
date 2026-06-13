@@ -1,9 +1,7 @@
-version: '3'
-
 volumes:
   pg_data:
-  static:
-  media:
+  static_data:
+  media_data:
 
 services:
   db:
@@ -20,14 +18,12 @@ services:
   backend:
     image: oayaivaivb1/foodgram_backend:latest
     env_file: .env
-    ports:
-      - "8080:8000"
     depends_on:
       db:
         condition: service_healthy
     volumes:
-      - static:/app/staticfiles
-      - media:/app/media
+      - static_data:/app/staticfiles/
+      - media_data:/app/media/
       - ./data:/app/data
 
   frontend:
@@ -35,4 +31,4 @@ services:
     env_file: .env
     command: cp -r /app/build/. /frontend_static/
     volumes:
-      - static:/frontend_static
+      - static_data:/frontend_static

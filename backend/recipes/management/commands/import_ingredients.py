@@ -1,7 +1,6 @@
 import json
 import os
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 from recipes.models import Ingredient
 
@@ -10,23 +9,15 @@ class Command(BaseCommand):
     help = 'Импорт ингредиентов из JSON'
 
     def handle(self, *args, **options):
-        file_path = os.path.join(settings.BASE_DIR.parent, 'data', 'ingredients.json')
-
-        try:
-            with open(file_path, 'r', encoding='utf-8') as file:
-                data = json.load(file)
-        except FileNotFoundError:
-            self.stdout.write(self.style.ERROR('Файл не найден!'))
+        file_path = '/app/data/ingredients.json'
+        if not os.path.exists(file_path):
+            self.stdout.write(self.style.ERROR(f'Файл не найден: {file_path}'))
             return
-
-        ingredients_to_create = []
-        for item in data:
-            ingredients_to_create.append(
-                Ingredient(
-                    name=item.get('name'),
-                    measurement_unit=item.get('measurement_unit')
-                )
-            )
-        Ingredient.objects.bulk_create(
-            ingredients_to_create, ignore_conflicts=True)
+        with open(file_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+        objs = [
+            Ingredient(name=i['name'],
+                           measurement_unit=i[
+                               'measurement_unit']) for i in data]
+        Ingredient.objects.bulk_create(objs, ignore_conflicts=True)
         self.stdout.write(self.style.SUCCESS('Готово!'))
