@@ -10,7 +10,7 @@ class Command(BaseCommand):
     help = 'Импорт ингредиентов из JSON'
 
     def handle(self, *args, **options):
-        file_path = os.path.join(settings.BASE_DIR, 'data', 'ingredients.json')
+        file_path = os.path.join(settings.BASE_DIR.parent, 'data', 'ingredients.json')
 
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
