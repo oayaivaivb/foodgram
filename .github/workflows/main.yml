@@ -42,7 +42,7 @@ jobs:
           cd backend/
           python manage.py test
 
-  build_and_push_to_docker_hub:
+  build_backend_and_push_to_docker_hub:
     name: Push backend Docker image to DockerHub
     runs-on: ubuntu-latest
     needs: tests
@@ -80,7 +80,8 @@ jobs:
       - name: Push to DockerHub
         uses: docker/build-push-action@v4
         with:
-          context: ./nginx/
+          # ПРОВЕРЬ ЭТОТ ПУТЬ! Укажи реальное имя папки (например: ./infra/ или ./gateway/)
+          context: ./nginx/ 
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_gateway:latest
 
@@ -88,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     needs:
-      - build_and_push_to_docker_hub
+      - build_backend_and_push_to_docker_hub
       - build_gateway_and_push_to_docker_hub
     steps:
       - name: Checkout repo
@@ -128,4 +129,4 @@ jobs:
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: Деплой Foodgram (только backend) успешно выполнен!
+          message: Деплой Foodgram (Backend) успешно выполнен!
