@@ -1,8 +1,8 @@
 import json
 import os
 
-from django.core.management.base import BaseCommand
 from django.conf import settings
+from django.core.management.base import BaseCommand
 from recipes.models import Ingredient
 
 
@@ -27,5 +27,6 @@ class Command(BaseCommand):
                     measurement_unit=item.get('measurement_unit')
                 )
             )
-        Ingredient.objects.bulk_create(ingredients_to_create, ignore_conflicts=True)
+        Ingredient.objects.bulk_create(
+            ingredients_to_create, ignore_conflicts=True)
         self.stdout.write(self.style.SUCCESS('Готово!'))

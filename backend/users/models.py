@@ -1,12 +1,13 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
 class User(AbstractUser):
     email = models.EmailField(unique=True, max_length=254)
     first_name = models.CharField(max_length=160)
     last_name = models.CharField(max_length=150)
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, default=None)
+    avatar = models.ImageField(upload_to='avatars/', blank=True,
+                               null=True, default=None)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'username']
 
@@ -20,12 +21,15 @@ class User(AbstractUser):
 
 
 class Subscription(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='follower')
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             related_name='follower')
+    author = models.ForeignKey(User, on_delete=models.CASCADE,
+                               related_name='following')
 
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         constraints = [
-            models.UniqueConstraint(fields=['user', 'author'], name='unique_subscription')
+            models.UniqueConstraint(fields=['user', 'author'],
+                                    name='unique_subscription')
         ]
