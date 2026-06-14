@@ -43,8 +43,8 @@ services:
       - frontend
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - static:/var/html/        # <-- ИСПРАВЛЕНО: теперь Nginx увидит и статику, и фронтенд
-      - media:/var/html/media/   # <-- ИСПРАВЛЕНО: теперь Nginx увидит картинки рецептов
+      - static:/var/html/       
+      - media:/var/html/media/   
     ports:
       - "8080:80"
     restart: always
