@@ -16,8 +16,9 @@ class Command(BaseCommand):
         with open(file_path, 'r', encoding='utf-8') as file:
             data = json.load(file)
         objs = [
-            Ingredient(name=i['name'],
-                           measurement_unit=i[
-                               'measurement_unit']) for i in data]
+            Ingredient(
+                name=i['name'], measurement_unit=i['measurement_unit']
+            ) for i in data
+        ]
         Ingredient.objects.bulk_create(objs, ignore_conflicts=True)
         self.stdout.write(self.style.SUCCESS('Готово!'))
