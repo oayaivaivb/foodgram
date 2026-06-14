@@ -7,7 +7,7 @@ volumes:
 
 services:
   db:
-    image: postgres:13
+    image: postgres:15-alpine  # Поднимаем версию базы до актуальной для Django
     env_file: .env
     volumes:
       - pg_data:/var/lib/postgresql/data
@@ -19,9 +19,11 @@ services:
     depends_on:
       - db
     volumes:
+      # Убедись, что левая часть (volume static) совпадает с тем, что подключено к gateway!
       - static:/backend_static
       - media:/app/media
-    restart: always
+      - ./data/:/app/data/  # Пробрасываем папку с json-файлами внутрь контейнера
+    restart: alwayss
 
   frontend:
     image: oayaivaivb1/foodgram_frontend:latest
