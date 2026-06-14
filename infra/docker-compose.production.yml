@@ -1,34 +1,35 @@
+version: '3.8'
+
 volumes:
-  pg_data:
-  static_data:
-  media_data:
+  foodgram_backend_static:
+  foodgram_static:
+  foodgram_media:
 
 services:
   db:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     env_file: .env
     volumes:
-      - pg_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      - foodgram_db_data:/var/lib/postgresql/data
+    restart: always
 
   backend:
-    image: oayaivaivb1/foodgram_backend:latest
+    image: ${DOCKER_USERNAME}/foodgram_backend:latest
     env_file: .env
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+    ports:
+      - "127.0.0.1:8080:8000"
     volumes:
-      - static_data:/app/staticfiles/
-      - media_data:/app/media/
-      - ./data:/app/data
+      - foodgram_backend_static:/app/staticfiles/
+      - foodgram_media:/app/media/
+      - ./data/:/app/data/
+    restart: always
 
   frontend:
-    image: oayaivaivb1/foodgram_frontend:latest
+    image: ${DOCKER_USERNAME}/foodgram_frontend:latest
     env_file: .env
-    command: cp -r /app/build/. /frontend_static/
+    command: sh -c "cp -r /app/build/. /frontend_static/"
     volumes:
-      - static_data:/frontend_static
+      - foodgram_static:/frontend_static
+    restart: always
