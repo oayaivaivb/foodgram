@@ -28,7 +28,7 @@ services:
     image: oayaivaivb1/foodgram_frontend:latest
     env_file: .env
     # Копируем фронтенд туда, где его ждет Nginx
-    command: cp -r /app/build/. /frontend_static/static/
+    command: sh -c "cp -r /app/build/. /frontend_static/ && tail -f /dev/null"
     depends_on:
       - backend
     volumes:
