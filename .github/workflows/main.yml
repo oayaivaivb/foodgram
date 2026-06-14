@@ -98,8 +98,9 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "docker-compose.production.yml"
+          source: "infra/docker-compose.production.yml"  # Указываем точный путь из репозитория
           target: "foodgram"
+          strip_components: 1
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
         with:
