@@ -19,16 +19,16 @@ services:
     depends_on:
       - db
     volumes:
-      # Убедись, что левая часть (volume static) совпадает с тем, что подключено к gateway!
-      - static:/app/staticfiles
+      - static:/app/staticfiles  # Django соберет файлы сюда
       - media:/app/media
-      - ./data/:/app/data/  # Пробрасываем папку с json-файлами внутрь контейнера
+      - ./data/:/app/data/
     restart: always
 
   frontend:
     image: oayaivaivb1/foodgram_frontend:latest
     env_file: .env
-    command: cp -r /app/build/. /frontend_static/
+    # Копируем фронтенд туда, где его ждет Nginx
+    command: cp -r /app/build/. /frontend_static/static/
     depends_on:
       - backend
     volumes:
@@ -43,8 +43,8 @@ services:
       - frontend
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - static:/staticfiles/
-      - media:/mediafiles/
+      - static:/var/html/        # <-- ИСПРАВЛЕНО: теперь Nginx увидит и статику, и фронтенд
+      - media:/var/html/media/   # <-- ИСПРАВЛЕНО: теперь Nginx увидит картинки рецептов
     ports:
       - "8080:80"
     restart: always
