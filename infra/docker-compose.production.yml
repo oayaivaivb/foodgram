@@ -20,7 +20,7 @@ services:
       - db
     volumes:
       # Убедись, что левая часть (volume static) совпадает с тем, что подключено к gateway!
-      - static:/backend_static
+      - static:/app/staticfiles
       - media:/app/media
       - ./data/:/app/data/  # Пробрасываем папку с json-файлами внутрь контейнера
     restart: always
