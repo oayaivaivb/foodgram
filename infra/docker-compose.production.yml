@@ -23,7 +23,7 @@ services:
       - static:/backend_static
       - media:/app/media
       - ./data/:/app/data/  # Пробрасываем папку с json-файлами внутрь контейнера
-    restart: alwayss
+    restart: always
 
   frontend:
     image: oayaivaivb1/foodgram_frontend:latest
