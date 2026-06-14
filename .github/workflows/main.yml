@@ -49,21 +49,21 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            # Переходим строго в рабочую папку на сервере
+            # 1. Переходим строго в рабочую папку на сервере
             cd /home/ubuntu/foodgram/
             
-            # Обновляем образы и перезапускаем проект
-            sudo docker compose pull
-            sudo docker compose down
-            sudo docker compose up -d
+            # 2. Обновляем образы и перезапускаем проект (ЯВНО указываем файл конфигурации)
+            sudo docker compose -f docker-compose.production.yml pull
+            sudo docker compose -f docker-compose.production.yml down
+            sudo docker compose -f docker-compose.production.yml up -d
             
-            # Выполняем менеджмент-команды Django внутри контейнера
-            sudo docker compose exec backend python manage.py migrate
-            sudo docker compose exec backend python manage.py collectstatic --no-input
+            # 3. Выполняем менеджмент-команды Django внутри контейнера
+            sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
+            sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --no-input
             
-            # Копируем статику админки и DRF в общую папку фронта
-            sudo docker compose exec backend cp -r /app/staticfiles/admin /frontend_static/
-            sudo docker compose exec backend cp -r /app/staticfiles/rest_framework /frontend_static/
+            # 4. Копируем статику админки и DRF в общую папку фронта
+            sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/staticfiles/admin /frontend_static/
+            sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/staticfiles/rest_framework /frontend_static/
             
-            # Импортируем ингредиенты (теперь csv/json точно найдутся в ./data/)
-            sudo docker compose exec backend python manage.py import_ingredients
+            # 5. Импортируем ингредиенты
+            sudo docker compose -f docker-compose.production.yml exec backend python manage.py import_ingredients
