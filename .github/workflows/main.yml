@@ -109,20 +109,12 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd foodgram
-            export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
             sudo docker compose -f docker-compose.production.yml pull
             sudo docker compose -f docker-compose.production.yml down
             sudo docker compose -f docker-compose.production.yml up -d
-            
-            # Накатываем миграции и собираем статику внутри контейнера
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --no-input
-            
-            # Перекидываем собранную статику бэкенда (admin и rest_framework) в volume фронтенда, 
-            # чтобы внешний Nginx искал всё в одном месте, как указано в его конфиге.
             sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/staticfiles/. /frontend_static/
-            
-            # Опционально: загрузка ингредиентов, если это необходимо при каждом деплое
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py import_ingredients
 
   send_message:

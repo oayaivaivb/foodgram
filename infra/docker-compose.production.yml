@@ -1,8 +1,8 @@
-version: '3.8'
-
 volumes:
+  foodgram_db_data:
   foodgram_backend_static:
   foodgram_static:
+  foodgram: # Оставляем для совместимости, если внешний Nginx смотрит сюда
   foodgram_media:
 
 services:
@@ -14,7 +14,7 @@ services:
     restart: always
 
   backend:
-    image: ${DOCKER_USERNAME}/foodgram_backend:latest
+    image: oayaivaivb1/foodgram_backend:latest
     env_file: .env
     depends_on:
       - db
@@ -27,7 +27,7 @@ services:
     restart: always
 
   frontend:
-    image: ${DOCKER_USERNAME}/foodgram_frontend:latest
+    image: oayaivaivb1/foodgram_frontend:latest
     env_file: .env
     command: sh -c "cp -r /app/build/. /frontend_static/"
     volumes:
