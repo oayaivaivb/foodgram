@@ -50,13 +50,16 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd foodgram
-            # Обновляем образы
+            
+            # 1. Перезапускаем контейнеры
             sudo docker compose -f docker-compose.production.yml pull
             sudo docker compose -f docker-compose.production.yml down
             sudo docker compose -f docker-compose.production.yml up -d
             
-            # Миграции и импорт
+            # 2. ДАЕМ БАЗЕ ДАННЫХ 5 СЕКУНД НА ЗАПУСК СЕТИ
+            sleep 5
+            
+            # 3. Выполняем команды Django
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --no-input
-            sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/staticfiles/. /app/collected_static/
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py import_ingredients

@@ -1,9 +1,10 @@
-version: '3'
-
 volumes:
   pg_data:
   static_value:
   media_value:
+
+networks:
+  foodgram_network:
 
 services:
   db:
@@ -11,6 +12,9 @@ services:
     env_file: .env
     volumes:
       - pg_data:/var/lib/postgresql/data
+    networks:
+      - foodgram_network
+    restart: always
 
   backend:
     image: oayaivaivb1/foodgram_backend:latest
@@ -20,13 +24,19 @@ services:
     volumes:
       - static_value:/app/staticfiles/
       - media_value:/app/media/
-      - ./data/:/app/data/ # Тут твои ингредиенты
+      - ./data/:/app/data/
+    networks:
+      - foodgram_network
+    restart: always
 
   frontend:
     image: oayaivaivb1/foodgram_frontend:latest
-    command: cp -r /app/build/. /frontend_static/
+    command: sh -c "cp -r /app/build/. /frontend_static/"
     volumes:
       - static_value:/frontend_static
+    networks:
+      - foodgram_network
+    restart: always
 
   gateway:
     image: nginx:1.24.0-alpine
@@ -39,3 +49,6 @@ services:
     depends_on:
       - backend
       - frontend
+    networks:
+      - foodgram_network
+    restart: always
