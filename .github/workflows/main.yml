@@ -49,21 +49,14 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            # 1. Переходим строго в рабочую папку на сервере
-            cd /home/ubuntu/foodgram/
-            
-            # 2. Обновляем образы и перезапускаем проект (ЯВНО указываем файл конфигурации)
+            cd foodgram
+            # Обновляем образы
             sudo docker compose -f docker-compose.production.yml pull
             sudo docker compose -f docker-compose.production.yml down
             sudo docker compose -f docker-compose.production.yml up -d
             
-            # 3. Выполняем менеджмент-команды Django внутри контейнера
+            # Миграции и импорт
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --no-input
-            
-            # 4. Копируем статику админки и DRF в общую папку фронта
-            sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/staticfiles/admin /frontend_static/
-            sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/staticfiles/rest_framework /frontend_static/
-            
-            # 5. Импортируем ингредиенты
+            sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/staticfiles/. /app/collected_static/
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py import_ingredients
