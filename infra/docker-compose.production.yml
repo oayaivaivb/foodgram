@@ -2,7 +2,6 @@ volumes:
   foodgram_db_data:
   foodgram_backend_static:
   foodgram_static:
-  foodgram: # Оставляем для совместимости, если внешний Nginx смотрит сюда
   foodgram_media:
 
 services:
@@ -22,6 +21,8 @@ services:
       - "127.0.0.1:8080:8000"
     volumes:
       - foodgram_backend_static:/app/staticfiles/
+      # ПОДКЛЮЧАЕМ вольюм статики фронта к бэкенду:
+      - foodgram_static:/frontend_static/  
       - foodgram_media:/app/media/
       - ./data/:/app/data/
     restart: always
