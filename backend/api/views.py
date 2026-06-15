@@ -1,7 +1,7 @@
 from api.filters import IngredientFilter, RecipeFilter
 from api.pagination import FoodgramPagination
 from api.permissions import IsAuthorOrReadOnly
-from api.serializers import (AvatarSerializer, CustomUserSerializer,
+from api.serializers import (AvatarSerializer, UserSerializer,
                              IngredientSerializer, RecipeCreateSerializer,
                              RecipeReadSerializer, RecipeShortSerializer,
                              SubscriptionSerializer, TagSerializer)
@@ -23,32 +23,33 @@ from users.models import Subscription
 User = get_user_model()
 
 
-class CustomUserViewSet(DjoserUserViewSet):
+class UserViewSet(DjoserUserViewSet):
     queryset = User.objects.all()
-    serializer_class = CustomUserSerializer
+    serializer_class = UserSerializer
     pagination_class = FoodgramPagination
 
-    @action(detail=False, methods=['put', 'delete'],
+    @action(detail=False, methods=['put',],
             url_path='me/avatar', permission_classes=[IsAuthenticated])
-    def avatar(self, request):
+    def set_avatar(self, request):
         user = request.user
-        if request.method == 'PUT':
-            serializer = AvatarSerializer(user, data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = AvatarSerializer(user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        if request.method == 'DELETE':
-            if not user.avatar:
-                return Response(
-                    {'detail': 'Аватар не установлен.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            user.avatar.delete(save=False)
-            user.avatar = None
-            user.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete',],
+            url_path='me/avatar', permission_classes=[IsAuthenticated])
+    def delete_avatar(self, request):
+        user = request.user
+        if not user.avatar:
+            return Response(
+                {'detail': 'Аватар не установлен.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        user.avatar.delete(save=False)
+        user.avatar = None
+        user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['get'], url_path='subscriptions',
             permission_classes=[IsAuthenticated])
