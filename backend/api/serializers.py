@@ -216,7 +216,7 @@ class RecipeShortSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class SubscriptionSerializer(UserSerializer):
+class SubscriptionReadSerializer(UserSerializer):
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.ReadOnlyField(source='recipes.count')
 
@@ -234,3 +234,35 @@ class SubscriptionSerializer(UserSerializer):
         return RecipeShortSerializer(
             queryset, many=True, context=self.context
         ).data
+
+
+class SubscriptionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = ('user', 'author')
+
+    def validate(self, data):
+        user = data.get('user')
+        author = data.get('author')
+        subscription = Subscription.objects.filter(user=user, author=author)
+        if user == author:
+            raise serializers.ValidationError('Нельзя подписаться на себя.')
+        if subscription.exists():
+            raise serializers.ValidationError('Вы уже подписаны.')
+        return data
+
+    def create(self, validated_data):
+        return Subscription.objects.create(**validated_data)
+
+
+class SubscriptionDeleteSerializer(serializers.Serializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+
+    def validate(self, data):
+        user = data.get('user')
+        author = data.get('author')
+        subscription = Subscription.objects.filter(user=user, author=author)
+        if not subscription.exists():
+            raise serializers.ValidationError('Вы не подписаны.')
+        return data
