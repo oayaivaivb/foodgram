@@ -5,6 +5,7 @@ LAST_NAME_MAX_LENGTH = 254
 LAST_NAME_MAX_LENGTH = 160
 LAST_NAME_MAX_LENGTH = 150
 
+
 class User(AbstractUser):
     email = models.EmailField(unique=True, max_length=LAST_NAME_MAX_LENGTH)
     first_name = models.CharField(max_length=LAST_NAME_MAX_LENGTH)

@@ -11,6 +11,7 @@ TAG_NAME_MAX_LENGTH = 255
 RECIPE_NAME_MAX_LENGTH = 255
 RECIPE_COOKING_TIME_MIN_VALUE = 1
 
+
 class Ingredient(models.Model):
     name = models.CharField(unique=True, max_length=INGREDIENT_NAME_MAX_LENGTH)
     measurement_unit = models.CharField(max_length=INGREDIENT_NAME_MAX_LENGTH)
@@ -79,6 +80,7 @@ class RecipeIngredient(models.Model):
                                     name='unique_recipe_ingredient')
         ]
 
+
 class ShoppingFavoriteBaseModel(models.Model):
     user = models.ForeignKey('users.User', on_delete=models.CASCADE)
     recipe = models.ForeignKey('Recipe', on_delete=models.CASCADE)
@@ -89,6 +91,7 @@ class ShoppingFavoriteBaseModel(models.Model):
             models.UniqueConstraint(fields=['user', 'recipe'],
                                     name='%(app_label)s_%(class)s_unique')
         ]
+
 
 class Favorite(ShoppingFavoriteBaseModel):
     user = models.ForeignKey('users.User', on_delete=models.CASCADE,
