@@ -42,8 +42,7 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
-    author = models.ForeignKey('users.User', on_delete=models.CASCADE,
-                               related_name='recipes')
+    author = models.ForeignKey('users.User', on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     image = models.ImageField(upload_to='recipes/images/')
     text = models.TextField()
@@ -59,6 +58,7 @@ class Recipe(models.Model):
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ('-pub_date',)
+        default_related_name = 'recipes'
 
     def __str__(self):
         return self.name
