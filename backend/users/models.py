@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-
 LAST_NAME_MAX_LENGTH = 254
 LAST_NAME_MAX_LENGTH = 160
 LAST_NAME_MAX_LENGTH = 150
@@ -35,5 +34,9 @@ class Subscription(models.Model):
         verbose_name_plural = 'Подписки'
         constraints = [
             models.UniqueConstraint(fields=['user', 'author'],
-                                    name='unique_subscription')
+                                    name='unique_subscription'),
+            models.CheckConstraint(check=~models.Q(user=models.F('author')),
+                                   name='no_sefl_subscription')
         ]
+    def __str__(self):
+        return f'{self.user} подписан на {self.author}'
