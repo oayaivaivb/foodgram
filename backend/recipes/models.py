@@ -2,7 +2,6 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
 
-
 INGREDIENT_NAME_MAX_LENGTH = 255
 INGREDIENT_NAME_MAX_LENGTH = 50
 INGREDIENT_AMOUT_MIN_VALUE = 1
