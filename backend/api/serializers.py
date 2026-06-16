@@ -3,7 +3,8 @@ import base64
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer as DjoserUserSerializer
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
 from rest_framework import serializers
 from users.models import Subscription
 
@@ -214,6 +215,66 @@ class RecipeShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class FavoriteCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Favorite
+        fields = ('user', 'recipe')
+
+    def validate(self, data):
+        user = data.get('user')
+        recipe = data.get('recipe')
+        relation = Favorite.objects.filter(user=user, recipe=recipe)
+        if relation.exists():
+            raise serializers.ValidationError('Рецепт уже добавлен.')
+        return data
+
+    def create(self, validated_data):
+        return Favorite.objects.create(**validated_data)
+
+
+class FavoriteDeleteSerializer(serializers.Serializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+
+    def validate(self, data):
+        user = data.get('user')
+        recipe = data.get('recipe')
+        relation = Favorite.objects.filter(user=user, recipe=recipe)
+        if not relation.exists():
+            raise serializers.ValidationError('Рецепт не найден в списке.')
+        return data
+
+
+class ShoppingCartCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShoppingCart
+        fields = ('user', 'recipe')
+
+    def validate(self, data):
+        user = data.get('user')
+        recipe = data.get('recipe')
+        relation = ShoppingCart.objects.filter(user=user, recipe=recipe)
+        if relation.exists():
+            raise serializers.ValidationError('Рецепт уже добавлен.')
+        return data
+
+    def create(self, validated_data):
+        return ShoppingCart.objects.create(**validated_data)
+
+
+class ShoppingCartDeleteSerializer(serializers.Serializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+
+    def validate(self, data):
+        user = data.get('user')
+        recipe = data.get('recipe')
+        relation = ShoppingCart.objects.filter(user=user, recipe=recipe)
+        if not relation.exists():
+            raise serializers.ValidationError('Рецепт не найден в списке.')
+        return data
 
 
 class SubscriptionReadSerializer(UserSerializer):

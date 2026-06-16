@@ -1,9 +1,12 @@
 from api.filters import IngredientFilter, RecipeFilter
 from api.pagination import FoodgramPagination
 from api.permissions import IsAuthorOrReadOnly
-from api.serializers import (AvatarSerializer, IngredientSerializer,
+from api.serializers import (AvatarSerializer, FavoriteCreateSerializer,
+                             FavoriteDeleteSerializer, IngredientSerializer,
                              RecipeCreateSerializer, RecipeReadSerializer,
                              RecipeShortSerializer,
+                             ShoppingCartCreateSerializer,
+                             ShoppingCartDeleteSerializer,
                              SubscriptionCreateSerializer,
                              SubscriptionDeleteSerializer,
                              SubscriptionReadSerializer, TagSerializer,
@@ -76,7 +79,6 @@ class UserViewSet(DjoserUserViewSet):
             })
             serializer.is_valid(raise_exception=True)
             serializer.save()
-
             response_serializer = SubscriptionReadSerializer(
                 author, context={'request': request}
             )
@@ -89,7 +91,14 @@ class UserViewSet(DjoserUserViewSet):
                 'author': author.id
             })
             delete_serializer.is_valid(raise_exception=True)
-            Subscription.objects.filter(user=user, author=author).delete()
+            deleted_count, _ = Subscription.objects.filter(
+                user=user, author=author
+            ).delete()
+            if deleted_count == 0:
+                return Response(
+                    {'detail': 'Вы не подписаны.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -98,7 +107,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TagSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
-C
+
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
@@ -128,39 +137,79 @@ class RecipeViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
 
-    def _handle_relation(self, request, model, pk):
+    @action(detail=True, methods=['post',],
+            url_path='favorite', permission_classes=[IsAuthenticated])
+    def set_favorite(self, request, pk=None):
         recipe = get_object_or_404(Recipe, id=pk)
         user = request.user
-        relation = model.objects.filter(user=user, recipe=recipe)
+        serializer = FavoriteCreateSerializer(data={
+            'recipe': recipe.id,
+            'user': user.id
+        })
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        response_serializer = RecipeShortSerializer(
+            recipe, context={'request': request}
+        )
+        return Response(
+            response_serializer.data, status=status.HTTP_201_CREATED)
 
-        if request.method == 'POST':
-            if relation.exists():
-                return Response(
-                    {'detail': 'Рецепт уже добавлен.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            model.objects.create(user=request.user, recipe=recipe)
-            serializer = RecipeShortSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        if request.method == 'DELETE':
-            if not relation.exists():
-                return Response(
-                    {'detail': 'Рецепт не найден в списке.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            relation.delete()
+    @action(detail=True, methods=['delete',],
+            url_path='favorite', permission_classes=[IsAuthenticated])
+    def delete_favorite(self, request, pk=None):
+        recipe = get_object_or_404(Recipe, id=pk)
+        user = request.user
+        delete_serializer = FavoriteDeleteSerializer(data={
+            'recipe': recipe.id,
+            'user': user.id
+        })
+        delete_serializer.is_valid(raise_exception=True)
+        deleted_count, _ = Favorite.objects.filter(
+            user=user, recipe=recipe
+        ).delete()
+        if deleted_count == 0:
+            return Response(
+                {'detail': 'Рецепта нет в избранном.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['post', 'delete'],
-            url_path='favorite', permission_classes=[IsAuthenticated])
-    def favorite(self, request, pk=None):
-        return self._handle_relation(request, Favorite, pk)
-
-    @action(detail=True, methods=['post', 'delete'],
+    @action(detail=True, methods=['post',],
             url_path='shopping_cart', permission_classes=[IsAuthenticated])
-    def shopping_cart(self, request, pk=None):
-        return self._handle_relation(request, ShoppingCart, pk)
+    def set_shopping_cart(self, request, pk=None):
+        recipe = get_object_or_404(Recipe, id=pk)
+        user = request.user
+        serializer = ShoppingCartCreateSerializer(data={
+            'recipe': recipe.id,
+            'user': user.id
+        })
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        response_serializer = RecipeShortSerializer(
+            recipe, context={'request': request}
+        )
+        return Response(
+            response_serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['delete',],
+            url_path='shopping_cart', permission_classes=[IsAuthenticated])
+    def delete_shopping_cart(self, request, pk=None):
+        recipe = get_object_or_404(Recipe, id=pk)
+        user = request.user
+        delete_serializer = ShoppingCartDeleteSerializer(data={
+            'recipe': recipe.id,
+            'user': user.id
+        })
+        delete_serializer.is_valid(raise_exception=True)
+        deleted_count, _ = ShoppingCart.objects.filter(
+            user=user, recipe=recipe
+        ).delete()
+        if deleted_count == 0:
+            return Response(
+                {'detail': 'Корзина пуста.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['get'],
             permission_classes=[IsAuthenticated])
