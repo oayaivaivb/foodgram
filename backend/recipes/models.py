@@ -22,7 +22,6 @@ class Ingredient(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(unique=True, max_length=255)
-    color = models.CharField(unique=True, max_length=7)
     slug = models.SlugField(unique=True)
 
     class Meta:
