@@ -3,9 +3,18 @@ from django.db import models
 from django.utils import timezone
 
 
+INGREDIENT_NAME_MAX_LENGTH = 255
+INGREDIENT_NAME_MAX_LENGTH = 50
+INGREDIENT_AMOUT_MIN_VALUE = 1
+
+TAG_NAME_MAX_LENGTH = 255
+
+RECIPE_NAME_MAX_LENGTH = 255
+RECIPE_COOKING_TIME_MIN_VALUE = 1
+
 class Ingredient(models.Model):
-    name = models.CharField(unique=True, max_length=255)
-    measurement_unit = models.CharField(max_length=50)
+    name = models.CharField(unique=True, max_length=INGREDIENT_NAME_MAX_LENGTH)
+    measurement_unit = models.CharField(max_length=INGREDIENT_NAME_MAX_LENGTH)
 
     class Meta:
         verbose_name = 'Ингредиент'
@@ -21,7 +30,7 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField(unique=True, max_length=255)
+    name = models.CharField(unique=True, max_length=TAG_NAME_MAX_LENGTH)
     slug = models.SlugField(unique=True)
 
     class Meta:
@@ -43,7 +52,7 @@ class Recipe(models.Model):
                                          related_name='recipes')
     tags = models.ManyToManyField('Tag', related_name='recipes')
     cooking_time = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1)])
+        validators=[MinValueValidator(RECIPE_COOKING_TIME_MIN_VALUE)])
     pub_date = models.DateTimeField(default=timezone.now, editable=False)
 
     class Meta:
@@ -60,7 +69,8 @@ class RecipeIngredient(models.Model):
                                related_name='recipe_ingredients')
     ingredient = models.ForeignKey('Ingredient', on_delete=models.CASCADE,
                                    related_name='recipe_ingredients')
-    amount = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    amount = models.PositiveIntegerField(
+        validators=[MinValueValidator(INGREDIENT_AMOUT_MIN_VALUE)])
 
     class Meta:
         verbose_name = 'Ингредиент в рецепте'
