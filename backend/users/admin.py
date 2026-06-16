@@ -19,6 +19,7 @@ class UserAdmin(BaseUserAdmin):
     def count_recipes(self, obj):
         return obj.recipes.count()
 
+
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ('user', 'author')

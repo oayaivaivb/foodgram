@@ -35,8 +35,10 @@ class Subscription(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['user', 'author'],
                                     name='unique_subscription'),
-            models.CheckConstraint(condition=~models.Q(user=models.F('author')),
-                                   name='no_sefl_subscription')
+            models.CheckConstraint(condition=~models.Q(
+                user=models.F('author')),
+                name='no_sefl_subscription')
         ]
+
     def __str__(self):
         return f'{self.user} подписан на {self.author}'
