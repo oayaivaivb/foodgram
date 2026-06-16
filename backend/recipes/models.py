@@ -80,8 +80,18 @@ class RecipeIngredient(models.Model):
                                     name='unique_recipe_ingredient')
         ]
 
+class ShoppingFavoriteBaseModel(models.Model):
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    recipe = models.ForeignKey('Recipe', on_delete=models.CASCADE)
 
-class Favorite(models.Model):
+    class Meta:
+        abstract = True
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'recipe'],
+                                    name='%(app_label)s_%(class)s_unique')
+        ]
+
+class Favorite(ShoppingFavoriteBaseModel):
     user = models.ForeignKey('users.User', on_delete=models.CASCADE,
                              related_name='favorited_by')
     recipe = models.ForeignKey('Recipe', on_delete=models.CASCADE,
@@ -90,13 +100,9 @@ class Favorite(models.Model):
     class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
-        constraints = [
-            models.UniqueConstraint(fields=['user', 'recipe'],
-                                    name='unique_favorite')
-        ]
 
 
-class ShoppingCart(models.Model):
+class ShoppingCart(ShoppingFavoriteBaseModel):
     user = models.ForeignKey('users.User', on_delete=models.CASCADE,
                              related_name='shopping_cart_by')
     recipe = models.ForeignKey('Recipe', on_delete=models.CASCADE,
@@ -105,7 +111,3 @@ class ShoppingCart(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
-        constraints = [
-            models.UniqueConstraint(fields=['user', 'recipe'],
-                                    name='unique_shopping_cart')
-        ]
