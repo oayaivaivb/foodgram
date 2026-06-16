@@ -37,7 +37,8 @@ class RecipeAdmin(admin.ModelAdmin):
 
     @admin.display(description='Изображение')
     def image_preview(self, obj):
-        return format_html('<img src="{}" width="50" height="50">', obj.image.url)
+        return format_html('<img src="{}" width="50" height="50">',
+                           obj.image.url)
 
 
 @admin.register(RecipeIngredient)
