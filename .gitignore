@@ -140,3 +140,7 @@ dmypy.json
 
 static/
 media/
+
+etc_nginx_sites-enabled_default.txt
+
+nginx copy.conf
