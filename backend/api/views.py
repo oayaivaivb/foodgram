@@ -34,28 +34,49 @@ class UserViewSet(DjoserUserViewSet):
     serializer_class = UserSerializer
     pagination_class = FoodgramPagination
 
-    @action(detail=False, methods=['put',],
+    @action(detail=False, methods=['put', 'delete'],
             url_path='me/avatar', permission_classes=[IsAuthenticated])
-    def set_avatar(self, request):
+    def avatar(self, request):
         user = request.user
-        serializer = AvatarSerializer(user, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['delete',],
-            url_path='me/avatar', permission_classes=[IsAuthenticated])
-    def delete_avatar(self, request):
-        user = request.user
-        if not user.avatar:
-            return Response(
-                {'detail': 'Аватар не установлен.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        user.avatar.delete(save=False)
-        user.avatar = None
-        user.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if request.method == 'PUT':
+            serializer = AvatarSerializer(user, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        elif request.method == 'DELETE':
+            if not user.avatar:
+                return Response(
+                    {'detail': 'Аватар не установлен.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            user.avatar.delete(save=False)
+            user.avatar = None
+            user.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+    # @action(detail=False, methods=['put',],
+    #         url_path='me/avatar', permission_classes=[IsAuthenticated])
+    # def set_avatar(self, request):
+    #     user = request.user
+    #     serializer = AvatarSerializer(user, data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # @action(detail=False, methods=['delete',],
+    #         url_path='me/avatar', permission_classes=[IsAuthenticated])
+    # def delete_avatar(self, request):
+    #     user = request.user
+    #     if not user.avatar:
+    #         return Response(
+    #             {'detail': 'Аватар не установлен.'},
+    #             status=status.HTTP_400_BAD_REQUEST
+    #         )
+    #     user.avatar.delete(save=False)
+    #     user.avatar = None
+    #     user.save()
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['get'], url_path='subscriptions',
             permission_classes=[IsAuthenticated])
