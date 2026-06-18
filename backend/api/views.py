@@ -18,9 +18,7 @@ from .pagination import FoodgramPagination
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (AvatarSerializer, FavoriteSerializer,
                           IngredientSerializer, RecipeCreateSerializer,
-                          RecipeReadSerializer, RecipeShortSerializer,
-                          ShoppingCartSerializer,
-                          SubscriptionCreateDeleteSerializer,
+                          RecipeReadSerializer, ShoppingCartSerializer,
                           SubscriptionReadSerializer, TagSerializer,
                           UserSerializer)
 
