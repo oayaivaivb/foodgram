@@ -199,64 +199,39 @@ class RecipeShortSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class FavoriteCreateSerializer(serializers.ModelSerializer):
+class BaseFavoriteShoppingCartSerializer(serializers.ModelSerializer):
     class Meta:
+        abstract = True
+        fields = ('user', 'recipe')
+
+    def get_model(self):
+        return self.Meta.model
+
+    def validate(self, data):
+        user = data.get('user')
+        recipe = data.get('recipe')
+        model = self.get_model()
+        relation = model.objects.filter(user=user, recipe=recipe)
+        action = self.context.get('action')
+
+        if action == 'create' and relation.exists():
+            raise serializers.ValidationError('Рецепт уже добавлен.')
+        if action == 'delete' and not relation.exists():
+            raise serializers.ValidationError('Рецепт не найден в списке.')
+        return data
+
+    def create(self, validated_data):
+        return self.get_model().objects.create(**validated_data)
+
+
+class FavoriteSerializer(BaseFavoriteShoppingCartSerializer):
+    class Meta(BaseFavoriteShoppingCartSerializer.Meta):
         model = Favorite
-        fields = ('user', 'recipe')
-
-    def validate(self, data):
-        user = data.get('user')
-        recipe = data.get('recipe')
-        relation = Favorite.objects.filter(user=user, recipe=recipe)
-        if relation.exists():
-            raise serializers.ValidationError('Рецепт уже добавлен.')
-        return data
-
-    def create(self, validated_data):
-        return Favorite.objects.create(**validated_data)
 
 
-class FavoriteDeleteSerializer(serializers.Serializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
-
-    def validate(self, data):
-        user = data.get('user')
-        recipe = data.get('recipe')
-        relation = Favorite.objects.filter(user=user, recipe=recipe)
-        if not relation.exists():
-            raise serializers.ValidationError('Рецепт не найден в списке.')
-        return data
-
-
-class ShoppingCartCreateSerializer(serializers.ModelSerializer):
-    class Meta:
+class ShoppingCartSerializer(BaseFavoriteShoppingCartSerializer):
+    class Meta(BaseFavoriteShoppingCartSerializer.Meta):
         model = ShoppingCart
-        fields = ('user', 'recipe')
-
-    def validate(self, data):
-        user = data.get('user')
-        recipe = data.get('recipe')
-        relation = ShoppingCart.objects.filter(user=user, recipe=recipe)
-        if relation.exists():
-            raise serializers.ValidationError('Рецепт уже добавлен.')
-        return data
-
-    def create(self, validated_data):
-        return ShoppingCart.objects.create(**validated_data)
-
-
-class ShoppingCartDeleteSerializer(serializers.Serializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
-
-    def validate(self, data):
-        user = data.get('user')
-        recipe = data.get('recipe')
-        relation = ShoppingCart.objects.filter(user=user, recipe=recipe)
-        if not relation.exists():
-            raise serializers.ValidationError('Рецепт не найден в списке.')
-        return data
 
 
 class SubscriptionReadSerializer(UserSerializer):
