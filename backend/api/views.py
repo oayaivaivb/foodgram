@@ -19,8 +19,8 @@ from .permissions import IsAuthorOrReadOnly
 from .serializers import (AvatarSerializer, FavoriteSerializer,
                           IngredientSerializer, RecipeCreateSerializer,
                           RecipeReadSerializer, ShoppingCartSerializer,
-                          SubscriptionReadSerializer, TagSerializer,
-                          UserSerializer)
+                          SubscriptionReadSerializer, SubscriptionSerializer,
+                          TagSerializer, UserSerializer)
 
 User = get_user_model()
 
@@ -67,7 +67,7 @@ class UserViewSet(DjoserUserViewSet):
         author = get_object_or_404(User, id=id)
 
         if request.method == 'POST':
-            serializer = SubscriptionCreateDeleteSerializer(
+            serializer = SubscriptionSerializer(
                 data={'user': user.id, 'author': author.id},
                 context={'action': 'subscribe', 'request': request}
             )
@@ -75,7 +75,7 @@ class UserViewSet(DjoserUserViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        delete_serializer = SubscriptionCreateDeleteSerializer(
+        delete_serializer = SubscriptionSerializer(
             data={'user': user.id, 'author': author.id},
             context={'action': 'delete'}
         )
