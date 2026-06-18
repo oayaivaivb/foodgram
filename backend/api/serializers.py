@@ -223,6 +223,10 @@ class BaseFavoriteShoppingCartSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return self.get_model().objects.create(**validated_data)
 
+    def to_representation(self, instance):
+        recipe = instance.recipe
+        return RecipeShortSerializer(recipe, contex=self.contex).data
+
 
 class FavoriteSerializer(BaseFavoriteShoppingCartSerializer):
     class Meta(BaseFavoriteShoppingCartSerializer.Meta):
@@ -254,7 +258,7 @@ class SubscriptionReadSerializer(UserSerializer):
         ).data
 
 
-class SubscriptionCreateSerializer(serializers.ModelSerializer):
+class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
         fields = ('user', 'author')
@@ -263,24 +267,18 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
         user = data.get('user')
         author = data.get('author')
         subscription = Subscription.objects.filter(user=user, author=author)
-        if user == author:
+        action = self.context.get('action')
+        if action == 'subscribe' and user == author:
             raise serializers.ValidationError('Нельзя подписаться на себя.')
-        if subscription.exists():
+        if action == 'subscribe' and subscription.exists():
             raise serializers.ValidationError('Вы уже подписаны.')
+        if action == 'delete' and not subscription.exists():
+            raise serializers.ValidationError('Вы не подписаны.')
         return data
 
     def create(self, validated_data):
         return Subscription.objects.create(**validated_data)
 
-
-class SubscriptionDeleteSerializer(serializers.Serializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-
-    def validate(self, data):
-        user = data.get('user')
-        author = data.get('author')
-        subscription = Subscription.objects.filter(user=user, author=author)
-        if not subscription.exists():
-            raise serializers.ValidationError('Вы не подписаны.')
-        return data
+    def to_representation(self, instance):
+        author = instance.autor
+        return SubscriptionReadSerializer(author, contex=self.contex).data
