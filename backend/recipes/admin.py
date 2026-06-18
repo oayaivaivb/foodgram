@@ -30,6 +30,7 @@ class RecipeAdmin(admin.ModelAdmin):
                     'in_is_favorite', 'image_preview')
     list_filter = ('author', 'tags')
     search_fields = ('author__username', 'name')
+    inlines = (RecipeIngredientInline,)
 
     @admin.display(description='Добавлений в избранное')
     def in_is_favorite(self, obj):
