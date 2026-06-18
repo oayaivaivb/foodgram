@@ -1,16 +1,3 @@
-from api.filters import IngredientFilter, RecipeFilter
-from api.pagination import FoodgramPagination
-from api.permissions import IsAuthorOrReadOnly
-from api.serializers import (AvatarSerializer, FavoriteCreateSerializer,
-                             FavoriteDeleteSerializer, IngredientSerializer,
-                             RecipeCreateSerializer, RecipeReadSerializer,
-                             RecipeShortSerializer,
-                             ShoppingCartCreateSerializer,
-                             ShoppingCartDeleteSerializer,
-                             SubscriptionCreateSerializer,
-                             SubscriptionDeleteSerializer,
-                             SubscriptionReadSerializer, TagSerializer,
-                             UserSerializer)
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
@@ -25,6 +12,19 @@ from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from users.models import Subscription
+
+from .filters import IngredientFilter, RecipeFilter
+from .pagination import FoodgramPagination
+from .permissions import IsAuthorOrReadOnly
+from .serializers import (AvatarSerializer, FavoriteCreateSerializer,
+                          FavoriteDeleteSerializer, IngredientSerializer,
+                          RecipeCreateSerializer, RecipeReadSerializer,
+                          RecipeShortSerializer, ShoppingCartCreateSerializer,
+                          ShoppingCartDeleteSerializer,
+                          SubscriptionCreateSerializer,
+                          SubscriptionDeleteSerializer,
+                          SubscriptionReadSerializer, TagSerializer,
+                          UserSerializer)
 
 User = get_user_model()
 
