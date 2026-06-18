@@ -1,14 +1,13 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-LAST_NAME_MAX_LENGTH = 254
-LAST_NAME_MAX_LENGTH = 160
-LAST_NAME_MAX_LENGTH = 150
+from foodgram.constants import (EMAIL_NAME_MAX_LENGTH, FIRST_NAME_MAX_LENGTH,
+                                LAST_NAME_MAX_LENGTH)
 
 
 class User(AbstractUser):
-    email = models.EmailField(unique=True, max_length=LAST_NAME_MAX_LENGTH)
-    first_name = models.CharField(max_length=LAST_NAME_MAX_LENGTH)
+    email = models.EmailField(unique=True, max_length=EMAIL_NAME_MAX_LENGTH)
+    first_name = models.CharField(max_length=FIRST_NAME_MAX_LENGTH)
     last_name = models.CharField(max_length=LAST_NAME_MAX_LENGTH)
     avatar = models.ImageField(upload_to='avatars/', blank=True,
                                null=True, default=None)

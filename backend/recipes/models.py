@@ -2,18 +2,12 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
 
-INGREDIENT_NAME_MAX_LENGTH = 255
-INGREDIENT_NAME_MAX_LENGTH = 50
-INGREDIENT_AMOUT_MIN_VALUE = 1
-
-TAG_NAME_MAX_LENGTH = 255
-
-RECIPE_NAME_MAX_LENGTH = 255
-RECIPE_COOKING_TIME_MIN_VALUE = 1
+from foodgram.constants import (INGREDIENT_NAME_MAX_LENGTH, NAME_MAX_LENGTH,
+                                TIME_AMOUT_MIN_VALUE)
 
 
 class Ingredient(models.Model):
-    name = models.CharField(unique=True, max_length=INGREDIENT_NAME_MAX_LENGTH)
+    name = models.CharField(unique=True, max_length=NAME_MAX_LENGTH)
     measurement_unit = models.CharField(max_length=INGREDIENT_NAME_MAX_LENGTH)
 
     class Meta:
@@ -43,15 +37,15 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey('users.User', on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=NAME_MAX_LENGTH)
     image = models.ImageField(upload_to='recipes/images/')
-    text = models.TextField()
+    text = models.TextField(verbose_name='Описание')
     ingredients = models.ManyToManyField('Ingredient',
                                          through='RecipeIngredient',
                                          related_name='recipes')
     tags = models.ManyToManyField('Tag', related_name='recipes')
     cooking_time = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(RECIPE_COOKING_TIME_MIN_VALUE)])
+        validators=[MinValueValidator(TIME_AMOUT_MIN_VALUE)])
     pub_date = models.DateTimeField(default=timezone.now, editable=False)
 
     class Meta:
@@ -70,7 +64,7 @@ class RecipeIngredient(models.Model):
     ingredient = models.ForeignKey('Ingredient', on_delete=models.CASCADE,
                                    related_name='recipe_ingredients')
     amount = models.PositiveIntegerField(
-        validators=[MinValueValidator(INGREDIENT_AMOUT_MIN_VALUE)])
+        validators=[MinValueValidator(TIME_AMOUT_MIN_VALUE)])
 
     class Meta:
         verbose_name = 'Ингредиент в рецепте'
