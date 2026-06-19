@@ -2,10 +2,14 @@ import base64
 
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
+
 from djoser.serializers import UserSerializer as DjoserUserSerializer
+
+from rest_framework import serializers
+
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
-from rest_framework import serializers
+
 from users.models import Subscription
 
 User = get_user_model()
@@ -216,16 +220,13 @@ class BaseFavoriteShoppingCartSerializer(serializers.ModelSerializer):
 
         if action == 'create' and relation.exists():
             raise serializers.ValidationError('Рецепт уже добавлен.')
-        if action == 'delete' and not relation.exists():
-            raise serializers.ValidationError('Рецепт не найден в списке.')
         return data
 
     def create(self, validated_data):
         return self.get_model().objects.create(**validated_data)
 
     def to_representation(self, instance):
-        recipe = instance.recipe
-        return RecipeShortSerializer(recipe, contex=self.contex).data
+        return RecipeShortSerializer(instance.recipe, context=self.context).data
 
 
 class FavoriteSerializer(BaseFavoriteShoppingCartSerializer):
@@ -267,18 +268,12 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         user = data.get('user')
         author = data.get('author')
         subscription = Subscription.objects.filter(user=user, author=author)
-        action = self.context.get('action')
-        if action == 'subscribe' and user == author:
+        if user == author:
             raise serializers.ValidationError('Нельзя подписаться на себя.')
-        if action == 'subscribe' and subscription.exists():
+        if subscription.exists():
             raise serializers.ValidationError('Вы уже подписаны.')
-        if action == 'delete' and not subscription.exists():
-            raise serializers.ValidationError('Вы не подписаны.')
         return data
 
-    def create(self, validated_data):
-        return Subscription.objects.create(**validated_data)
-
     def to_representation(self, instance):
-        author = instance.autor
-        return SubscriptionReadSerializer(author, contex=self.contex).data
+        return SubscriptionReadSerializer(
+            instance.author, context=self.context).data

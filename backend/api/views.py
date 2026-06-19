@@ -4,14 +4,17 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingCart, Tag)
+
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
+
 from users.models import Subscription
+
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
 
 from .filters import IngredientFilter, RecipeFilter
 from .pagination import FoodgramPagination
@@ -75,11 +78,6 @@ class UserViewSet(DjoserUserViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        delete_serializer = SubscriptionSerializer(
-            data={'user': user.id, 'author': author.id},
-            context={'action': 'delete'}
-        )
-        delete_serializer.is_valid(raise_exception=True)
         deleted_count, _ = Subscription.objects.filter(
             user=user, author=author
         ).delete()
@@ -127,10 +125,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
     def _add_to_relation(self, request, pk, serializer_class):
-        recipe = get_object_or_404(Recipe, id=pk)
-        user = request.user
+        user = self.request.user
         serializer = serializer_class(
-            data={'recipe': recipe.id, 'user': user.id},
+            data={'recipe': pk, 'user': user.id},
             context={'action': 'create', 'request': request}
         )
         serializer.is_valid(raise_exception=True)
@@ -139,16 +136,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def _remove_from_relation(self, request, pk, model,
                               serializer_class, error_msg):
-        recipe = get_object_or_404(Recipe, id=pk)
-        user = request.user
-        delete_serializer = serializer_class(
-            data={'recipe': recipe.id, 'user': user.id},
-            context={'action': 'delete'}
-        )
-        delete_serializer.is_valid(raise_exception=True)
+        user = self.request.user
         deleted_count, _ = model.objects.filter(
-            user=user, recipe=recipe
-        ).delete()
+            user=user, recipe=pk).delete()
         if deleted_count == 0:
             return Response(
                 {'detail': error_msg},
@@ -192,7 +182,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'ingredient__measurement_unit'
         ).annotate(
             total_amount=Sum('amount')
-        )
+        ).order_by('ingredient__name')
 
         shopping_list = "Список покупок"
         for item in ingredients:

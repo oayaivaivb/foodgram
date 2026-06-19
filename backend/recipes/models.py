@@ -76,8 +76,16 @@ class RecipeIngredient(models.Model):
 
 
 class ShoppingFavoriteBaseModel(models.Model):
-    user = models.ForeignKey('users.User', on_delete=models.CASCADE)
-    recipe = models.ForeignKey('Recipe', on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        'users.User',
+        on_delete=models.CASCADE,
+        related_name='%(class)s_user'
+    )
+    recipe = models.ForeignKey(
+        'Recipe',
+        on_delete=models.CASCADE,
+        related_name='%(class)s_recipe'
+    )
 
     class Meta:
         abstract = True
@@ -88,22 +96,12 @@ class ShoppingFavoriteBaseModel(models.Model):
 
 
 class Favorite(ShoppingFavoriteBaseModel):
-    user = models.ForeignKey('users.User', on_delete=models.CASCADE,
-                             related_name='favorited_by')
-    recipe = models.ForeignKey('Recipe', on_delete=models.CASCADE,
-                               related_name='favorited_recipes')
-
     class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
 
 
 class ShoppingCart(ShoppingFavoriteBaseModel):
-    user = models.ForeignKey('users.User', on_delete=models.CASCADE,
-                             related_name='shopping_cart_by')
-    recipe = models.ForeignKey('Recipe', on_delete=models.CASCADE,
-                               related_name='shopping_cart_recipes')
-
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'

@@ -1,4 +1,5 @@
 from django_filters import rest_framework as filters
+
 from recipes.models import Ingredient, Recipe, Tag
 
 
@@ -29,10 +30,11 @@ class RecipeFilter(filters.FilterSet):
     def filter_is_in_shopping_cart(self, queryset, name, value):
         if self.request.user.is_authenticated and value:
             return queryset.filter(
-                shopping_cart_recipes__user=self.request.user)
+                shoppingcart_recipe__user=self.request.user)
+        return queryset
 
     def filter_is_favorited(self, queryset, name, value):
         if self.request.user.is_authenticated and value:
             return queryset.filter(
-                favorited_recipes__user=self.request.user)
+                favorite_recipe__user=self.request.user)
         return queryset
