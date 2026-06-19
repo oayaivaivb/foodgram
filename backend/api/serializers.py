@@ -226,7 +226,8 @@ class BaseFavoriteShoppingCartSerializer(serializers.ModelSerializer):
         return self.get_model().objects.create(**validated_data)
 
     def to_representation(self, instance):
-        return RecipeShortSerializer(instance.recipe, context=self.context).data
+        return RecipeShortSerializer(
+            instance.recipe, context=self.context).data
 
 
 class FavoriteSerializer(BaseFavoriteShoppingCartSerializer):
