@@ -199,12 +199,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return response
 
 
-# def short_link_redirect(request, id):
-#     recipe = get_object_or_404(Recipe, id=id)
-#     return redirect(f'/recipes/{recipe.id}/')
-
-
 def short_link_redirect(request, id):
     recipe = get_object_or_404(Recipe, id=id)
-    # Редирект на фронтенд-страницу рецепта
-    return redirect(f'https://foodgramm.sytes.net/recipes/{recipe.id}/')
+    return redirect(f'/recipes/{recipe.id}/')
+
