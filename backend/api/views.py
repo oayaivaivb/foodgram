@@ -202,4 +202,3 @@ class RecipeViewSet(viewsets.ModelViewSet):
 def short_link_redirect(request, id):
     recipe = get_object_or_404(Recipe, id=id)
     return redirect(f'/recipes/{recipe.id}/')
-
