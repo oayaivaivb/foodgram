@@ -198,10 +198,5 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
         return response
 
-
-# def short_link_redirect(request, id):
-#     recipe = get_object_or_404(Recipe, id=id)
-#     return redirect(f'/recipes/{recipe.id}/')
-
 def short_link_redirect(request, id):
     return HttpResponse(f"Hello! Recipe id: {id}")
