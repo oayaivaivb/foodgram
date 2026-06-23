@@ -130,14 +130,16 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         )
 
     def get_is_favorited(self, obj):
-        """Проверяет, добавлен ли рецепт в избранное у текущего пользователя."""
+        """Проверяет, добавлен ли рецепт в избранное
+        у текущего пользователя."""
         request = self.context.get('request')
         return (request
                 and request.user.is_authenticated
                 and request.user.favorite_user.filter(recipe=obj).exists())
 
     def get_is_in_shopping_cart(self, obj):
-        """Проверяет, добавлен ли рецепт в список покупок у текущего пользователя."""
+        """Проверяет, добавлен ли рецепт в список покупок
+        у текущего пользователя."""
         request = self.context.get('request')
         return (request
                 and request.user.is_authenticated
