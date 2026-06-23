@@ -137,19 +137,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
 
-    def _add_to_relation(self, request, pk, serializer_class):
+    def _add_to_relation(self, pk, serializer_class):
         """Вспомогательный метод для добавления рецепта в избранное/корзину."""
         user = self.request.user
         serializer = serializer_class(
             data={'recipe': pk, 'user': user.id},
-            context={'action': 'create', 'request': request}
+            context={'action': 'create', 'request': self.request}
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def _remove_from_relation(self, request, pk, model,
-                              serializer_class, error_msg):
+    def _remove_from_relation(self, pk, model, error_msg):
         """Вспомогательный метод для удаления из избранного/корзины."""
         user = self.request.user
         deleted_count, _ = model.objects.filter(
