@@ -237,29 +237,20 @@ class RecipeShortSerializer(serializers.ModelSerializer):
 
 class BaseFavoriteShoppingCartSerializer(serializers.ModelSerializer):
     """Базовый абстрактный сериализатор для избранного и списка покупок."""
+
     class Meta:
         abstract = True
         fields = ('user', 'recipe')
-
-    def get_model(self):
-        """Возвращает модель, с которой работает сериализатор."""
-        return self.Meta.model
 
     def validate(self, data):
         """Проверяет, не добавлен ли уже рецепт в избранное/список покупок."""
         user = data.get('user')
         recipe = data.get('recipe')
-        model = self.get_model()
-        relation = model.objects.filter(user=user, recipe=recipe)
-        action = self.context.get('action')
+        relation = self.Meta.model.objects.filter(user=user, recipe=recipe)
 
-        if action == 'create' and relation.exists():
+        if relation.exists():
             raise serializers.ValidationError('Рецепт уже добавлен.')
         return data
-
-    def create(self, validated_data):
-        """Создаёт объект избранного или списка покупок."""
-        return self.get_model().objects.create(**validated_data)
 
     def to_representation(self, instance):
         """Возвращает краткую информацию о рецепте."""
