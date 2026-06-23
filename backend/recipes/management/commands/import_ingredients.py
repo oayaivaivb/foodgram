@@ -6,9 +6,12 @@ from recipes.models import Ingredient
 
 
 class Command(BaseCommand):
+    """Кастомная команда для импорта ингредиентов из JSON-файла."""
+
     help = 'Импорт ингредиентов из JSON'
 
     def handle(self, *args, **options):
+        """Основная логика импорта ингредиентов."""
         file_path = '/app/data/ingredients.json'
         if not os.path.exists(file_path):
             self.stdout.write(self.style.ERROR(f'Файл не найден: {file_path}'))

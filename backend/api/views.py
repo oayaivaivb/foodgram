@@ -29,6 +29,8 @@ User = get_user_model()
 
 
 class UserViewSet(DjoserUserViewSet):
+    """Вьюсет для работы с пользователями (регистрация, профиль, подписки)."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = FoodgramPagination
@@ -36,6 +38,7 @@ class UserViewSet(DjoserUserViewSet):
     @action(detail=False, methods=['put', 'delete'],
             url_path='me/avatar', permission_classes=[IsAuthenticated])
     def avatar(self, request):
+        """Обновление или удаление аватара текущего пользователя."""
         user = request.user
 
         if request.method == 'PUT':
@@ -57,6 +60,7 @@ class UserViewSet(DjoserUserViewSet):
     @action(detail=False, methods=['get'], url_path='subscriptions',
             permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
+        """Возвращает список авторов, на которых подписан пользователь."""
         queryset = User.objects.filter(following__user=request.user)
         page = self.paginate_queryset(queryset)
         serializer = SubscriptionReadSerializer(
@@ -66,6 +70,7 @@ class UserViewSet(DjoserUserViewSet):
     @action(detail=True, methods=['post', 'delete'],
             url_path='subscribe', permission_classes=[IsAuthenticated])
     def subscribe(self, request, id=None):
+        """Подписка или отписка от автора."""
         user = request.user
         author = get_object_or_404(User, id=id)
 
@@ -90,12 +95,16 @@ class UserViewSet(DjoserUserViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """Вьюсет для получения списка тегов (только чтение)."""
+
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    """Вьюсет для получения списка ингредиентов (только чтение)."""
+
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
@@ -104,6 +113,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """Вьюсет для работы с рецептами."""
+
     queryset = Recipe.objects.all()
     permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     pagination_class = FoodgramPagination
@@ -111,12 +122,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
 
     def get_serializer_class(self):
+        """Выбор сериализатора в зависимости от действия."""
         if self.action in ['list', 'retrieve']:
             return RecipeReadSerializer
         return RecipeCreateSerializer
 
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_link(self, request, pk=None):
+        """Возвращает короткую ссылку на рецепт."""
         recipe = get_object_or_404(Recipe, id=pk)
         base_url = request.build_absolute_uri('/')[:-1]
         return Response(
@@ -125,6 +138,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
     def _add_to_relation(self, request, pk, serializer_class):
+        """Вспомогательный метод для добавления рецепта в избранное/корзину."""
         user = self.request.user
         serializer = serializer_class(
             data={'recipe': pk, 'user': user.id},
@@ -136,6 +150,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def _remove_from_relation(self, request, pk, model,
                               serializer_class, error_msg):
+        """Вспомогательный метод для удаления из избранного/корзины."""
         user = self.request.user
         deleted_count, _ = model.objects.filter(
             user=user, recipe=pk).delete()
@@ -149,6 +164,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post', 'delete'],
             url_path='favorite', permission_classes=[IsAuthenticated])
     def favorite(self, request, pk=None):
+        """Добавление или удаление рецепта из избранного."""
         if request.method == 'POST':
             return self._add_to_relation(request, pk, FavoriteSerializer)
         return self._remove_from_relation(request, pk, Favorite,
@@ -158,6 +174,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post', 'delete'],
             url_path='shopping_cart', permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
+        """Добавление или удаление рецепта из списка покупок."""
         if request.method == 'POST':
             return self._add_to_relation(request, pk, ShoppingCartSerializer)
         return self._remove_from_relation(request, pk, ShoppingCart,
@@ -167,6 +184,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'],
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
+        """Скачивание списка покупок в виде текстового файла."""
         user = request.user
 
         if not ShoppingCart.objects.filter(user=user).exists():
@@ -200,5 +218,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 def short_link_redirect(request, id):
+    """Перенаправление по короткой ссылке на страницу рецепта."""
     recipe = get_object_or_404(Recipe, id=id)
     return redirect(f'/recipes/{recipe.id}/')

@@ -7,6 +7,8 @@ from foodgram.constants import (INGREDIENT_NAME_MAX_LENGTH, NAME_MAX_LENGTH,
 
 
 class Ingredient(models.Model):
+    """Модель ингредиента с названием и единицей измерения."""
+
     name = models.CharField(unique=True, max_length=NAME_MAX_LENGTH)
     measurement_unit = models.CharField(max_length=INGREDIENT_NAME_MAX_LENGTH)
 
@@ -24,6 +26,8 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
+    """Модель тега для категоризации рецептов."""
+
     name = models.CharField(unique=True, max_length=NAME_MAX_LENGTH)
     slug = models.SlugField(unique=True)
 
@@ -36,6 +40,8 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
+    """Модель рецепта с автором, ингредиентами, тегами и временем."""
+
     author = models.ForeignKey('users.User', on_delete=models.CASCADE)
     name = models.CharField(max_length=NAME_MAX_LENGTH)
     image = models.ImageField(upload_to='recipes/images/')
@@ -59,6 +65,8 @@ class Recipe(models.Model):
 
 
 class RecipeIngredient(models.Model):
+    """Промежуточная модель для связи рецептов и ингредиентов с количеством."""
+
     recipe = models.ForeignKey('Recipe', on_delete=models.CASCADE,
                                related_name='recipe_ingredients')
     ingredient = models.ForeignKey('Ingredient', on_delete=models.CASCADE,
@@ -76,6 +84,8 @@ class RecipeIngredient(models.Model):
 
 
 class ShoppingFavoriteBaseModel(models.Model):
+    """Абстрактная базовая модель для избранного и списка покупок."""
+
     user = models.ForeignKey(
         'users.User',
         on_delete=models.CASCADE,
@@ -96,12 +106,16 @@ class ShoppingFavoriteBaseModel(models.Model):
 
 
 class Favorite(ShoppingFavoriteBaseModel):
+    """Модель избранных рецептов пользователя."""
+
     class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
 
 
 class ShoppingCart(ShoppingFavoriteBaseModel):
+    """Модель списка покупок пользователя."""
+
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'

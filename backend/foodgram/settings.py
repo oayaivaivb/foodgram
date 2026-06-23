@@ -148,8 +148,10 @@ DJOSER = {
 
 CSRF_TRUSTED_ORIGINS = ['https://foodgramm.sytes.net']
 
+# Заголовок для определения протокола при проксировании
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# Настройки генерации OpenAPI-схемы (drf-spectacular)
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Foodgram API',
     'DESCRIPTION': 'API для проекта Foodgram',

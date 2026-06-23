@@ -6,6 +6,8 @@ from foodgram.constants import (EMAIL_NAME_MAX_LENGTH, FIRST_NAME_MAX_LENGTH,
 
 
 class User(AbstractUser):
+    """Кастомная модель пользователя с авторизацией по email."""
+
     email = models.EmailField(unique=True, max_length=EMAIL_NAME_MAX_LENGTH)
     first_name = models.CharField(max_length=FIRST_NAME_MAX_LENGTH)
     last_name = models.CharField(max_length=LAST_NAME_MAX_LENGTH)
@@ -24,6 +26,8 @@ class User(AbstractUser):
 
 
 class Subscription(models.Model):
+    """Модель подписки одного пользователя на другого."""
+
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                              related_name='follower')
     author = models.ForeignKey(User, on_delete=models.CASCADE,
