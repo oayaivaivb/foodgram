@@ -223,6 +223,8 @@ function App() {
         <div className="App">
           <Header orders={orders} loggedIn={loggedIn} onSignOut={onSignOut} />
           <Switch>
+            <Route exact path="/about" component={About} />
+            <Route exact path="/technologies" component={Technologies} />
             <Route
               exact
               path="/user/:id"
@@ -284,7 +286,6 @@ function App() {
               loggedIn={loggedIn}
               onAvatarChange={changeAvatar}
             />
-
             <Route exact path="/recipes/:id">
               <SingleCard
                 loggedIn={loggedIn}
@@ -292,19 +293,12 @@ function App() {
                 updateOrders={updateOrders}
               />
             </Route>
-
-            <Route exact path="/technologies" component={Technologies} />
-
             <Route exact path="/reset-password">
               <ResetPassword onPasswordReset={onPasswordReset} />
             </Route>
-
-            <Route exact path="/about" component={About} />
-
             <Route exact path="/recipes">
               <Main updateOrders={updateOrders} />
             </Route>
-
             <Route exact path="/signin">
               <SignIn
                 onSignIn={authorization}
