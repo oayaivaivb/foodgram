@@ -223,18 +223,8 @@ function App() {
         <div className="App">
           <Header orders={orders} loggedIn={loggedIn} onSignOut={onSignOut} />
           <Switch>
-            {/* <Route exact path="/about" component={About} />
-            <Route exact path="/technologies" component={Technologies} /> */}
-            <Route exact path="/about">
-              <div style={{ padding: '40px', fontSize: '24px' }}>
-                СТРАНИЦА О ПРОЕКТЕ (РАБОТАЕТ!)
-              </div>
-            </Route>
-            <Route exact path="/technologies">
-              <div style={{ padding: '40px', fontSize: '24px' }}>
-                СТРАНИЦА ТЕХНОЛОГИИ (РАБОТАЕТ!)
-              </div>
-            </Route>
+            <Route exact path="/about" component={About} />
+            <Route exact path="/technologies" component={Technologies} />
             <Route
               exact
               path="/user/:id"
