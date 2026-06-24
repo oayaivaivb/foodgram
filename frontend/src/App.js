@@ -223,7 +223,11 @@ function App() {
         <div className="App">
           <Header orders={orders} loggedIn={loggedIn} onSignOut={onSignOut} />
           <Switch>
-            <Route exact path="/about" component={About} />
+            {/* <Route exact path="/about" component={About} /> */}
+            <Route exact path="/about">
+              {console.log('ABOUT ROUTE MATCHED!')}
+              <About />
+            </Route>
             <Route exact path="/technologies" component={Technologies} />
             <Route
               exact
@@ -316,7 +320,11 @@ function App() {
             <Route exact path="/">
               <Redirect to="/recipes" />
             </Route>
+            {/* <Route path="*">
+              <NotFound />
+            </Route> */}
             <Route path="*">
+              {console.log('NOT FOUND ROUTE MATCHED!')}
               <NotFound />
             </Route>
           </Switch>
