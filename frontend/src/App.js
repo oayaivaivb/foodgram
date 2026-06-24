@@ -293,17 +293,13 @@ function App() {
               />
             </Route>
 
-            <Route exact path="/about">
-              <About  />
-            </Route>
+            <Route exact path="/technologies" component={Technologies} />
 
             <Route exact path="/reset-password">
               <ResetPassword onPasswordReset={onPasswordReset} />
             </Route>
 
-            <Route exact path="/technologies">
-              <Technologies />
-            </Route>
+            <Route exact path="/about" component={About} />
 
             <Route exact path="/recipes">
               <Main updateOrders={updateOrders} />
